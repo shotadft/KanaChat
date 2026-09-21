@@ -68,7 +68,7 @@ public class KanaChatCommand implements CommandExecutor {
             plugin.getDictionary().set(args[2], readings);
             sender.sendMessage(Component.text(
                     (args[1].equalsIgnoreCase("add") ? "Added" : "Updated") +
-                    " dictionary entry: " + args[2],
+                            " dictionary entry: " + args[2],
                     NamedTextColor.GOLD
             ));
             return true;

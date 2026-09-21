@@ -40,11 +40,9 @@ public class AsyncChatDecorateListener implements Listener {
         String space = "";
         Component component = event.originalMessage();
 
-        if (!(component instanceof TextComponent)) {
+        if (!(component instanceof TextComponent textComponent)) {
             return;
         }
-
-        TextComponent textComponent = (TextComponent) component;
 
         String message = textComponent.content();
 
@@ -116,7 +114,7 @@ public class AsyncChatDecorateListener implements Listener {
             Matcher wordMatcher = wordPattern.matcher(word);
             if (!wordMatcher.matches()) {
                 // with blank
-                if (stringBuilder.length() > 0) {
+                if (!stringBuilder.isEmpty()) {
                     stringBuilder.append(" ");
                 }
                 stringBuilder.append(word);
@@ -168,7 +166,7 @@ public class AsyncChatDecorateListener implements Listener {
                     translatedWord = word;
 
                     // with blank
-                    if (stringBuilder.length() > 0) {
+                    if (!stringBuilder.isEmpty()) {
                         stringBuilder.append(" ");
                     }
                     isLastTranslated = false;

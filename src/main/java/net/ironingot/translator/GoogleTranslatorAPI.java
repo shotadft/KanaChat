@@ -8,56 +8,66 @@ import org.json.simple.parser.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 public class GoogleTranslatorAPI {
-    private static final String baseURL = "https://www.google.com/transliterate";
-    private static final String from = "ja-Hira";
-    private static final String to = "ja";
-    private static final String codec = "UTF-8";
+    private static final String baseURL = "https://inputtools.google.com/request";
 
     private static String makeURLString(String text) {
-        return baseURL + "?langpair=" + from + "|" + to + "&text=" + text;
+        try {
+            String encodedText = URLEncoder.encode(text, StandardCharsets.UTF_8);
+            return baseURL + "?text=" + encodedText + "&itc=ja-t-i0-und&num=1&ie=utf-8&oe=utf-8";
+        } catch (Exception e) {
+            KanaChat.logger.log(Level.SEVERE, "URL encoding error:", e);
+            return baseURL;
+        }
     }
 
     public static String translate(String text) {
         String result = text;
         try {
-            String encodedText = URLEncoder.encode(text, codec);
-            String response = callWebAPI(makeURLString(encodedText));
-            result = pickupFirstCandidate(response);
-        } catch (UnsupportedEncodingException e) {
+            String response = callWebAPI(makeURLString(text));
+            String candidate = pickupFirstCandidate(response);
+            if (!candidate.isEmpty()) {
+                result = candidate;
+            }
+        } catch (Exception e) {
             KanaChat.logger.log(Level.SEVERE, "translate error:", e);
         }
         return result;
-   }
+    }
 
-   private static String pickupFirstCandidate(String response) {
+    private static String pickupFirstCandidate(String response) {
         StringBuilder stringBuilder = new StringBuilder();
         JSONParser parser = new JSONParser();
 
         try {
-            JSONArray responseArray = (JSONArray)parser.parse(response);
+            JSONArray rootArray = (JSONArray) parser.parse(response);
 
-            for (Object o : responseArray) {
-                String partString = "";
-                try {
-                    JSONArray partArray = (JSONArray) o;
-                    partString = (String) partArray.get(0);
-                    partString = (String) ((JSONArray) partArray.get(1)).get(0);
-                } catch (IndexOutOfBoundsException e) {
-                    KanaChat.logger.log(Level.SEVERE, "", e);
+            if (rootArray.size() > 1 && "SUCCESS".equals(rootArray.get(0))) {
+                JSONArray responseArray = (JSONArray) rootArray.get(1);
+
+                for (Object o : responseArray) {
+                    try {
+                        JSONArray partArray = (JSONArray) o;
+                        JSONArray candidates = (JSONArray) partArray.get(1);
+                        if (!candidates.isEmpty()) {
+                            stringBuilder.append((String) candidates.get(0));
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        KanaChat.logger.log(Level.SEVERE, "candidate parse error:", e);
+                    }
                 }
-                stringBuilder.append(partString);
             }
         } catch (ParseException e) {
             KanaChat.logger.log(Level.SEVERE, "pickup parse error:", e);
         }
+
         return stringBuilder.toString();
     }
 
@@ -67,13 +77,15 @@ public class GoogleTranslatorAPI {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
-            URL url = new URL(urlString);
+            URL url = URI.create(urlString).toURL();
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
             connection.connect();
 
-            bufferedReader =
-                new BufferedReader(new InputStreamReader(connection.getInputStream(), codec));
+            bufferedReader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)
+            );
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
