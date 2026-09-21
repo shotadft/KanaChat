@@ -1,6 +1,7 @@
 name: KanaChat
 version: 2.1.1
-author: fubira, 月見里 彩葉
+authors: [ fubira, 月見里 彩葉 ]
+contributors: [ Shotadft ]
 main: net.ironingot.kanachat.KanaChat
 api-version: '1.21'
 description: Alphabet to Hiragana convert + Kanji Translation

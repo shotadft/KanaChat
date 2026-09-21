@@ -1,12 +1,11 @@
 package net.ironingot.kanachat;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import net.ironingot.kanachat.listener.AsyncChatDecorateListener;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
-
-import net.ironingot.kanachat.listener.AsyncChatDecorateListener;
 
 public class KanaChat extends JavaPlugin {
     public static final Logger logger = Logger.getLogger("Minecraft");
@@ -31,11 +30,11 @@ public class KanaChat extends JavaPlugin {
         // getServer().getPluginManager().registerEvents(new AsyncPlayerChatListener(this), this);
         getServer().getPluginManager().registerEvents(new AsyncChatDecorateListener(this), this);
 
-        logger.info(getDescription().getName() + "-" + getDescription().getVersion() + " is enabled");
+        logger.info(getName() + "-" + getPluginMeta().getVersion() + " is enabled");
     }
 
     public void onDisable() {
-        logger.info(getDescription().getName() + " is disabled");
+        logger.info(getName() + " is disabled");
     }
 
     public KanaChatConfiguration getConfiguration() {

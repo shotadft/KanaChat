@@ -6,12 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class KanaChatDictionary {
     private static final String FILE_NAME = "dictionary.yml";
@@ -20,7 +15,7 @@ public class KanaChatDictionary {
 
     private final JavaPlugin plugin;
     private final File file;
-    private final Map<String, List<String>> entries = new LinkedHashMap<String, List<String>>();
+    private final Map<String, List<String>> entries = new LinkedHashMap<>();
 
     public KanaChatDictionary(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -31,7 +26,7 @@ public class KanaChatDictionary {
     }
 
     public synchronized Map<String, String> getEntries() {
-        Map<String, String> result = new LinkedHashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<String, List<String>> entry : entries.entrySet()) {
             result.put(entry.getKey(), String.join(", ", entry.getValue()));
         }
@@ -39,7 +34,7 @@ public class KanaChatDictionary {
     }
 
     public synchronized Map<String, String> getValues() {
-        Map<String, String> result = new LinkedHashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<String, List<String>> entry : entries.entrySet()) {
             for (String reading : entry.getValue()) {
                 result.put(reading.toLowerCase(), entry.getKey());
@@ -49,7 +44,7 @@ public class KanaChatDictionary {
     }
 
     public synchronized List<String> getWords() {
-        return new ArrayList<String>(entries.keySet());
+        return new ArrayList<>(entries.keySet());
     }
 
     public synchronized boolean remove(String word) {
@@ -61,7 +56,7 @@ public class KanaChatDictionary {
     }
 
     public synchronized void set(String word, String[] readings) {
-        entries.put(word, new ArrayList<String>(Arrays.asList(readings)));
+        entries.put(word, new ArrayList<>(Arrays.asList(readings)));
         save();
     }
 
@@ -79,7 +74,7 @@ public class KanaChatDictionary {
                 continue;
             }
 
-            List<String> readings = new ArrayList<String>();
+            List<String> readings = new ArrayList<>();
             for (Object reading : (Collection<?>) readingsValue) {
                 if (reading instanceof String && !((String) reading).trim().isEmpty()) {
                     readings.add(((String) reading).trim());
@@ -97,11 +92,11 @@ public class KanaChatDictionary {
                 throw new IOException("Failed to create directory " + file.getParentFile());
             }
 
-            List<Map<String, Object>> serializedEntries = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> serializedEntries = new ArrayList<>();
             for (Map.Entry<String, List<String>> entry : entries.entrySet()) {
-                Map<String, Object> serializedEntry = new LinkedHashMap<String, Object>();
+                Map<String, Object> serializedEntry = new LinkedHashMap<>();
                 serializedEntry.put("word", entry.getKey());
-                serializedEntry.put("readings", new ArrayList<String>(entry.getValue()));
+                serializedEntry.put("readings", new ArrayList<>(entry.getValue()));
                 serializedEntries.add(serializedEntry);
             }
 
@@ -122,7 +117,7 @@ public class KanaChatDictionary {
         for (String word : section.getKeys(false)) {
             List<String> readings = section.getStringList(word);
             if (!readings.isEmpty() && !entries.containsKey(word)) {
-                entries.put(word, new ArrayList<String>(readings));
+                entries.put(word, new ArrayList<>(readings));
             }
         }
         save();

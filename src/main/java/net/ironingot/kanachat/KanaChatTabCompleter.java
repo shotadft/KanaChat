@@ -3,6 +3,7 @@ package net.ironingot.kanachat;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public class KanaChatTabCompleter implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NonNull CommandSender sender, @NonNull Command command, @NonNull String alias, String[] args) {
         if (args.length == 0) {
             return Collections.emptyList();
         }
@@ -37,7 +38,7 @@ public class KanaChatTabCompleter implements TabCompleter {
         }
 
         String prefix = args[args.length - 1].toLowerCase();
-        List<String> matches = new ArrayList<String>();
+        List<String> matches = new ArrayList<>();
         for (String suggestion : suggestions) {
             if (suggestion.toLowerCase().startsWith(prefix)) {
                 matches.add(suggestion);

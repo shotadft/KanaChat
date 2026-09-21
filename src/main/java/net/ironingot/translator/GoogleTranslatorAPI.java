@@ -1,20 +1,22 @@
 package net.ironingot.translator;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-
+import net.ironingot.kanachat.KanaChat;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.logging.Level;
+
 public class GoogleTranslatorAPI {
-    private static final String baseURL = "http://www.google.com/transliterate";
+    private static final String baseURL = "https://www.google.com/transliterate";
     private static final String from = "ja-Hira";
     private static final String to = "ja";
     private static final String codec = "UTF-8";
@@ -30,7 +32,7 @@ public class GoogleTranslatorAPI {
             String response = callWebAPI(makeURLString(encodedText));
             result = pickupFirstCandidate(response);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            KanaChat.logger.log(Level.SEVERE, "translate error:", e);
         }
         return result;
    }
@@ -42,19 +44,19 @@ public class GoogleTranslatorAPI {
         try {
             JSONArray responseArray = (JSONArray)parser.parse(response);
 
-            for (int id = 0; id < responseArray.size(); id++) {
+            for (Object o : responseArray) {
                 String partString = "";
                 try {
-                    JSONArray partArray = (JSONArray)responseArray.get(id);
-                    partString = (String)partArray.get(0);
-                    partString = (String)((JSONArray)partArray.get(1)).get(0);
+                    JSONArray partArray = (JSONArray) o;
+                    partString = (String) partArray.get(0);
+                    partString = (String) ((JSONArray) partArray.get(1)).get(0);
                 } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    KanaChat.logger.log(Level.SEVERE, "", e);
                 }
                 stringBuilder.append(partString);
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            KanaChat.logger.log(Level.SEVERE, "pickup parse error:", e);
         }
         return stringBuilder.toString();
     }
@@ -77,16 +79,14 @@ public class GoogleTranslatorAPI {
             while ((line = bufferedReader.readLine()) != null) {
                 stringBuilder.append(line);
             }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            KanaChat.logger.log(Level.SEVERE, "REST API Error", e);
         } finally {
             try {
                 if (bufferedReader != null) {
                     bufferedReader.close();
                 }
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
 
             if (connection != null) {
